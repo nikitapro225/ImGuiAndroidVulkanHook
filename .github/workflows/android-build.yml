@@ -1,0 +1,41 @@
+name: Android NDK Build
+
+on:
+  push:
+    branches:
+      - main  # Change this to your default branch
+  pull_request:
+    branches:
+      - main  # Change this to your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'  # Specify the Java version you need
+
+      - name: Download and set up Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+          unzip android-ndk-r21e-linux-x86_64.zip -d $HOME
+          echo "$HOME/android-ndk-r21e" >> $GITHUB_ENV
+
+      - name: Set up Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk
+          echo "sdk.dir=$HOME/android-sdk" > $HOME/android-sdk/local.properties
+          yes | sdkmanager --sdk_root=$HOME/android-sdk --install "platform-tools" "platforms;android-29"  # Change to your target API level
+
+      - name: Build with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21 ..
+          cmake --build . --config Release
