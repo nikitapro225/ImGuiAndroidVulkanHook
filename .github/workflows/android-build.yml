@@ -25,7 +25,8 @@ jobs:
         run: |
           wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
           unzip android-ndk-r21e-linux-x86_64.zip -d $HOME
-          echo "$HOME/android-ndk-r21e" >> $GITHUB_ENV
+        env:
+          ANDROID_NDK_HOME: $HOME/android-ndk-r21e  # Set the NDK path as an environment variable
 
       - name: Set up Android SDK
         run: |
@@ -37,5 +38,5 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21 ..
+          cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21 ..
           cmake --build . --config Release
